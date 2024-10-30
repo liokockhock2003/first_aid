@@ -1,63 +1,84 @@
+import 'package:firstaid/symptomchecker.dart';
 import 'package:flutter/material.dart';
-import 'symptomchecker.dart'; // Import the symptom checker page
-// Import the critical emergency page
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'main.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class NearestHospitalsPage extends StatefulWidget {
+  const NearestHospitalsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Symptom Checker App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'login page',),
-    );
-  }
+  _NearestHospitalsPageState createState() => _NearestHospitalsPageState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
+  late GoogleMapController _mapController;
+  LatLng _initialPosition = const LatLng(3.1390, 101.6869); // Default to Kuala Lumpur
+  final List<Marker> _hospitalMarkers = [];
+  final List<Map<String, String>> _hospitalList = [
+    {
+      'name': 'Hospital Kajang',
+      'distance': '2 km',
+      'phone': '+60192667383',
+      'location': '3.1253, 101.6890',
+    },
+    {
+      'name': 'Klinik Shamsara',
+      'distance': '1.6 km',
+      'phone': '+60112305560',
+      'location': '3.1200, 101.6800',
+    },
+  ];
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _obscurePassword = true; // To toggle password visibility
-  int _selectedIndex = 0; // Default index for BottomNavigationBar
-
-
-
+  int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      if (index == 3) { // If "Symptom" is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
+        );
+      } else if (index == 0) { // If "Symptom" is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),);
+      }
     });
   }
 
-  void _login() {
-    // Here you would typically handle the login logic
-    String username = _usernameController.text;
-    String password = _passwordController.text;
+  @override
+  void initState() {
+    super.initState();
+    _setHospitalMarkers();
+    _getCurrentLocation();
+  }
 
-    // For demonstration, just print the values
-    print('Username: $username, Password: $password');
+  void _getCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      _initialPosition = LatLng(position.latitude, position.longitude);
+    });
+  }
 
-    // You can also navigate to the SymptomCheckerPage after successful login
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
-    );
+  void _setHospitalMarkers() {
+    for (var hospital in _hospitalList) {
+      var coords = hospital['location']!.split(',');
+      double lat = double.parse(coords[0]);
+      double lng = double.parse(coords[1]);
+
+      _hospitalMarkers.add(
+        Marker(
+          markerId: MarkerId(hospital['name']!),
+          position: LatLng(lat, lng),
+          infoWindow: InfoWindow(
+            title: hospital['name'],
+            snippet: '${hospital['distance']} away',
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -75,59 +96,63 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          title: const Text('Login', style: TextStyle(fontSize: 24, color: Colors.white)), // Set text color to white
+          title: const Text('Map', style: TextStyle(fontSize: 24, color: Colors.white)), // Set text color to white
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'Welcome to the Symptom Checker App',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              _buildRoundedInputField(
-                controller: _usernameController,
-                labelText: 'Username',
-              ),
-              const SizedBox(height: 20),
-              _buildRoundedInputField(
-                controller: _passwordController,
-                labelText: 'Password',
-                obscureText: _obscurePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword; // Toggle password visibility
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30), // Rounded button
-                  ),
-                ),
-                child: const Text('Login'),
-              ),
-            ],
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _initialPosition,
+              zoom: 14.0,
+            ),
+            markers: Set.from(_hospitalMarkers),
+            onMapCreated: (GoogleMapController controller) {
+              _mapController = controller;
+            },
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
           ),
-        ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 200,
+              color: Colors.white,
+              child: ListView.builder(
+                itemCount: _hospitalList.length,
+                itemBuilder: (context, index) {
+                  var hospital = _hospitalList[index];
+                  return ListTile(
+                    leading: const Icon(Icons.local_hospital, color: Colors.red),
+                    title: Text(hospital['name']!),
+                    subtitle: Text('Distance: ${hospital['distance']}'),
+                    trailing: ElevatedButton(
+                      onPressed: () {
+                        _mapController.animateCamera(CameraUpdate.newLatLng(
+                          LatLng(
+                            double.parse(hospital['location']!.split(',')[0]),
+                            double.parse(hospital['location']!.split(',')[1]),
+                          ),
+                        ));
+                      },
+                      child: Text('${hospital['distance']}'),
+                    ),
+                    onTap: () {
+                      // Implement call feature
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -156,30 +181,6 @@ class _MyHomePageState extends State<MyHomePage> {
         selectedItemColor: Colors.deepPurple,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
-      ),
-    );
-  }
-
-  Widget _buildRoundedInputField({
-    required TextEditingController controller,
-    required String labelText,
-    bool obscureText = false,
-    Widget? suffixIcon,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30), // Rounded corners
-          borderSide: const BorderSide(color: Colors.deepPurple),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.deepPurple),
-        ),
-        suffixIcon: suffixIcon, // Option to add a suffix icon
       ),
     );
   }
