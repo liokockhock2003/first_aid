@@ -1,5 +1,6 @@
 import 'package:first_aid/symptomchecker.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import 'main.dart';
 
@@ -9,11 +10,33 @@ class FirstAidVideoGuidePage extends StatefulWidget {
 }
 
 class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
-  // Example state variables that might be used in this page
-  bool isVideoPlaying = false; // This can be used to track video play state
+  bool isVideoPlaying = false; // Track if a video is playing
+  VideoPlayerController? _controller; // Controller for video playback
   int selectedVideoIndex = -1; // Track the currently selected video
 
+  final List<Map<String, String>> videoGuides = [
+    {'title': 'Make CPR', 'duration': '10 min'},
+    {'title': 'Stop Bleeding', 'duration': '5 min'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the video controller for the CPR video
+    _controller = VideoPlayerController.asset('assets/videos/cpr.mp4')
+      ..initialize().then((_) {
+        setState(() {}); // Update the state once the video is initialized
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose(); // Dispose the controller when done
+    super.dispose();
+  }
+
   int _selectedIndex = 0;
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -22,11 +45,23 @@ class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
           context,
           MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
         );
-      } else if (index == 0) { // If "Symptom" is tapped
+      } else if (index == 0) { // If "Home" is tapped
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),);
+          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),
+        );
       }
+    });
+  }
+
+  void _toggleVideo() {
+    setState(() {
+      if (isVideoPlaying) {
+        _controller?.pause();
+      } else {
+        _controller?.play();
+      }
+      isVideoPlaying = !isVideoPlaying;
     });
   }
 
@@ -45,7 +80,7 @@ class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
               ),
             ),
           ),
-          title: const Text('First Aid Diagnostic', style: TextStyle(fontSize: 24, color: Colors.white)), // Set text color to white
+          title: const Text('First Aid Diagnostic', style: TextStyle(fontSize: 24, color: Colors.white)),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -79,11 +114,11 @@ class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
                         setState(() {
                           if (selectedVideoIndex == index) {
                             // Toggle play/pause for the same video
-                            isVideoPlaying = !isVideoPlaying;
+                            _toggleVideo();
                           } else {
-                            // Play new video and set selected index
-                            isVideoPlaying = true;
+                            // Play the new video and set selected index
                             selectedVideoIndex = index;
+                            _toggleVideo(); // Start playing the selected video
                           }
                         });
                       },
@@ -93,6 +128,22 @@ class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
               },
             ),
           ),
+          // Show video player if the CPR video is selected
+          if (selectedVideoIndex == 0)
+            Container(
+              padding: EdgeInsets.all(8.0),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: VideoPlayer(_controller!),
+              ),
+            ),
+          // Display controls for the video player
+          if (isVideoPlaying)
+            VideoProgressIndicator(
+              _controller!,
+              allowScrubbing: true,
+              padding: EdgeInsets.all(8.0),
+            ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -126,10 +177,4 @@ class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
       ),
     );
   }
-
-  // Example list of video guides for display purposes
-  final List<Map<String, String>> videoGuides = [
-    {'title': 'Make CPR', 'duration': '10 min'},
-    {'title': 'Stop Bleeding', 'duration': '5 min'},
-  ];
 }

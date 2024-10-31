@@ -1,8 +1,5 @@
 import 'symptomchecker.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-
 import 'main.dart';
 
 class NearestHospitalsPage extends StatefulWidget {
@@ -13,9 +10,6 @@ class NearestHospitalsPage extends StatefulWidget {
 }
 
 class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
-  late GoogleMapController _mapController;
-  LatLng _initialPosition = const LatLng(3.1390, 101.6869); // Default to Kuala Lumpur
-  final List<Marker> _hospitalMarkers = [];
   final List<Map<String, String>> _hospitalList = [
     {
       'name': 'Hospital Kajang',
@@ -32,6 +26,7 @@ class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
   ];
 
   int _selectedIndex = 0;
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -40,45 +35,13 @@ class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
           context,
           MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
         );
-      } else if (index == 0) { // If "Symptom" is tapped
+      } else if (index == 0) { // If "Home" is tapped
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),);
+          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),
+        );
       }
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _setHospitalMarkers();
-    _getCurrentLocation();
-  }
-
-  void _getCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    setState(() {
-      _initialPosition = LatLng(position.latitude, position.longitude);
-    });
-  }
-
-  void _setHospitalMarkers() {
-    for (var hospital in _hospitalList) {
-      var coords = hospital['location']!.split(',');
-      double lat = double.parse(coords[0]);
-      double lng = double.parse(coords[1]);
-
-      _hospitalMarkers.add(
-        Marker(
-          markerId: MarkerId(hospital['name']!),
-          position: LatLng(lat, lng),
-          infoWindow: InfoWindow(
-            title: hospital['name'],
-            snippet: '${hospital['distance']} away',
-          ),
-        ),
-      );
-    }
   }
 
   @override
@@ -96,7 +59,7 @@ class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
               ),
             ),
           ),
-          title: const Text('Map', style: TextStyle(fontSize: 24, color: Colors.white)), // Set text color to white
+          title: const Text('Map', style: TextStyle(fontSize: 24, color: Colors.white)),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -104,17 +67,12 @@ class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _initialPosition,
-              zoom: 14.0,
-            ),
-            markers: Set.from(_hospitalMarkers),
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-            },
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
+          // Load your static image here
+          Image.asset(
+            'assets/images/img.png', // Ensure this path is correct
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           ),
           Positioned(
             bottom: 0,
@@ -133,12 +91,7 @@ class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
                     subtitle: Text('Distance: ${hospital['distance']}'),
                     trailing: ElevatedButton(
                       onPressed: () {
-                        _mapController.animateCamera(CameraUpdate.newLatLng(
-                          LatLng(
-                            double.parse(hospital['location']!.split(',')[0]),
-                            double.parse(hospital['location']!.split(',')[1]),
-                          ),
-                        ));
+                        // Implement functionality to navigate or provide more info
                       },
                       child: Text('${hospital['distance']}'),
                     ),
@@ -152,7 +105,6 @@ class _NearestHospitalsPageState extends State<NearestHospitalsPage> {
           ),
         ],
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
