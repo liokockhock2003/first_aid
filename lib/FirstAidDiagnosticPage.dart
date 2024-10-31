@@ -1,7 +1,10 @@
+import 'package:first_aid/symptomchecker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+
+import 'main.dart';
 
 class FirstAidDiagnosticPage extends StatefulWidget {
   @override
@@ -20,6 +23,23 @@ class _FirstAidDiagnosticPageState extends State<FirstAidDiagnosticPage> {
       });
       _analyzeImage(File(photo.path));
     }
+  }
+
+  int _selectedIndex = 0;
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      if (index == 3) { // If "Symptom" is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
+        );
+      } else if (index == 0) { // If "Symptom" is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),);
+      }
+    });
   }
 
   Future<void> _analyzeImage(File image) async {
@@ -43,22 +63,23 @@ class _FirstAidDiagnosticPageState extends State<FirstAidDiagnosticPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('First Aid Diagnostic'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              // Notification functionality
-            },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60.0),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.deepPurple, Colors.blue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
           ),
-          IconButton(
-            icon: Icon(Icons.person),
-            onPressed: () {
-              // User profile functionality
-            },
-          ),
-        ],
+          title: const Text('First Aid Diagnostic', style: TextStyle(fontSize: 24, color: Colors.white)), // Set text color to white
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
       ),
       body: Column(
         children: [
@@ -93,13 +114,33 @@ class _FirstAidDiagnosticPageState extends State<FirstAidDiagnosticPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.play_circle), label: 'Play'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.warning), label: 'Alert'),
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, size: 26),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map, size: 26),
+            label: 'Map',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.play_circle, size: 26),
+            label: 'Play',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sick, size: 26),
+            label: 'Symptom',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.error, size: 26),
+            label: 'Alert',
+          ),
         ],
+        selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
       ),
     );
   }

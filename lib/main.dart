@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'FirstAidDiagnosticPage.dart';
+import 'FirstAidVideoGuidePage.dart';
+import 'NearestHostpitalPage.dart';
 import 'symptomchecker.dart'; // Import the symptom checker page
 import 'criticalemergency.dart'; // Import the critical emergency page
 
@@ -17,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Login Page'),
+      home: FirstAidVideoGuidePage(),
     );
   }
 }

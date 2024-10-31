@@ -1,25 +1,55 @@
+import 'package:first_aid/symptomchecker.dart';
 import 'package:flutter/material.dart';
 
-class FirstAidVideoGuidePage extends StatelessWidget {
-  final List<Map<String, dynamic>> guides = [
-    {
-      'title': 'Make CPR',
-      'steps': ['Step 1: Check responsiveness', 'Step 2: Start chest compressions', 'Step 3: Give rescue breaths'],
-      'duration': '10 min',
-    },
-    {
-      'title': 'Stop Bleeding',
-      'steps': ['Step 1: Apply pressure', 'Step 2: Elevate the limb'],
-      'duration': '5 min',
-    },
-    // Add more guides as needed
-  ];
+import 'main.dart';
+
+class FirstAidVideoGuidePage extends StatefulWidget {
+  @override
+  _FirstAidVideoGuidePageState createState() => _FirstAidVideoGuidePageState();
+}
+
+class _FirstAidVideoGuidePageState extends State<FirstAidVideoGuidePage> {
+  // Example state variables that might be used in this page
+  bool isVideoPlaying = false; // This can be used to track video play state
+  int selectedVideoIndex = -1; // Track the currently selected video
+
+  int _selectedIndex = 0;
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      if (index == 3) { // If "Symptom" is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
+        );
+      } else if (index == 0) { // If "Symptom" is tapped
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'login page',)),);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('First Aid Video Guide'),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60.0),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.deepPurple, Colors.blue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          title: const Text('First Aid Diagnostic', style: TextStyle(fontSize: 24, color: Colors.white)), // Set text color to white
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
       ),
       body: Column(
         children: [
@@ -27,79 +57,36 @@ class FirstAidVideoGuidePage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search for a guide...',
+                hintText: 'Search...',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(onPressed: () {}, child: Text('CPR')),
-                ElevatedButton(onPressed: () {}, child: Text('Bleeding')),
-                ElevatedButton(onPressed: () {}, child: Text('Choking')),
-                ElevatedButton(onPressed: () {}, child: Text('Burns')),
-              ],
-            ),
-          ),
           Expanded(
             child: ListView.builder(
-              itemCount: guides.length,
+              itemCount: videoGuides.length,
               itemBuilder: (context, index) {
-                final guide = guides[index];
                 return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${index + 1}. ${guide['title']}',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: (guide['steps'] as List<String>)
-                              .map((step) => Text(step, style: TextStyle(fontSize: 16)))
-                              .toList(),
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text('Duration: ${guide['duration']}'),
-                                SizedBox(width: 10),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    // Toggle between text and video views
-                                  },
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.text_snippet),
-                                      Text('Text'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.play_circle_fill, size: 40),
-                              onPressed: () {
-                                // Navigate to video player page
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
+                  child: ListTile(
+                    title: Text(videoGuides[index]['title']!),
+                    subtitle: Text("Duration: ${videoGuides[index]['duration']}"),
+                    trailing: IconButton(
+                      icon: Icon(isVideoPlaying && selectedVideoIndex == index ? Icons.pause : Icons.play_arrow),
+                      onPressed: () {
+                        setState(() {
+                          if (selectedVideoIndex == index) {
+                            // Toggle play/pause for the same video
+                            isVideoPlaying = !isVideoPlaying;
+                          } else {
+                            // Play new video and set selected index
+                            isVideoPlaying = true;
+                            selectedVideoIndex = index;
+                          }
+                        });
+                      },
                     ),
                   ),
                 );
@@ -109,14 +96,40 @@ class FirstAidVideoGuidePage extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.play_circle), label: 'Play'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.warning), label: 'Alert'),
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, size: 26),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map, size: 26),
+            label: 'Map',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.play_circle, size: 26),
+            label: 'Play',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sick, size: 26),
+            label: 'Symptom',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.error, size: 26),
+            label: 'Alert',
+          ),
         ],
+        selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
       ),
     );
   }
+
+  // Example list of video guides for display purposes
+  final List<Map<String, String>> videoGuides = [
+    {'title': 'Make CPR', 'duration': '10 min'},
+    {'title': 'Stop Bleeding', 'duration': '5 min'},
+  ];
 }
