@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'symptomchecker.dart';
-import 'criticalemergency.dart';
-import 'edit_profile.dart';
-import 'home.dart';
-import 'condition_detail.dart'; // Import the new ConditionDetailPage
+import 'profile.dart';
+import 'condition_detail.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,11 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-<<<<<<< Updated upstream
       home: const MyHomePage(title: 'Login Page'),
-=======
-      // home: FirstAidDiagnosticPage(),
->>>>>>> Stashed changes
     );
   }
 }
@@ -47,12 +41,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      if (index == 3) { // Navigate to Profile Page
+      if (index == 3) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ProfilePage()),
         );
-      } else if (index == 4) { // Navigate to Condition Detail Page
+      } else if (index == 4) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ConditionDetailPage()),
@@ -62,11 +56,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _login() {
-    String username = _usernameController.text;
-    String password = _passwordController.text;
-
-    print('Username: $username, Password: $password');
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SymptomCheckerPage()),
@@ -76,22 +65,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60.0),
-        child: AppBar(
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.deepPurple, Colors.blue],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+      appBar: AppBar(
+        title: const Text('Login', style: TextStyle(fontSize: 24, color: Colors.white)),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.deepPurple, Colors.blue],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
-          title: const Text('Login', style: TextStyle(fontSize: 24, color: Colors.white)),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
       ),
       body: Padding(
@@ -131,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ElevatedButton(
                 onPressed: _login,
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -144,27 +129,12 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 26),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map, size: 26),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle, size: 26),
-            label: 'Play',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle, size: 26),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.error, size: 26),
-            label: 'Alert',
-          ),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.play_circle), label: 'Play'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.error), label: 'Alert'),
         ],
         selectedItemColor: Colors.deepPurple,
         unselectedItemColor: Colors.grey,
